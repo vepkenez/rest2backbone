@@ -39,12 +39,12 @@ var formsAPI= function () {
 			.extend({
 				tagName : 'div',
 				className : 'list_section',
-				template : '#general_list', // must overide, template must contain one ul
-				templateItem : '#template_list_item', //must overide.
-//				templateItemTitle : '#item_tile'   //useful to overide 
+				template : '#general_list', // must override, template must contain one ul
+				templateItem : '#template_list_item', //must override.
+//				templateItemTitle : '#item_tile'   //useful to override
 				events : {
 					'click #previous' : 'previousPage',
-					'click #next' : 'nextPage',
+					'click #next' : 'nextPage'
 				},
 				
 				render : function() {
@@ -83,7 +83,7 @@ var formsAPI= function () {
 					this.model.fetchNext({
 						reset : true
 					});
-				},
+				}
 				
 			});
 	
@@ -277,7 +277,7 @@ var formsAPI= function () {
 			var root=this.$el;
 			root.find('ul.r2b_errors').empty();
 			root.find('label.error').removeClass('error');
-		},
+		}
 		
 	});
 	
@@ -531,11 +531,8 @@ var formsAPI= function () {
 				});
 			view.render();
 			popup.append(view.$el);
-			
-			
 		}
 	});
-    
 
 	return api;
 }();

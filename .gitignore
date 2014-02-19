@@ -1,6 +1,12 @@
+venv
+.idea
 *.pyc
 /django_filters
 /rest_framework
 *~
 /htmlcov
 /.coverage
+sqlite.db
+.settings
+.pydevproject
+.project

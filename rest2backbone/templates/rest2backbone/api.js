@@ -1,6 +1,6 @@
-//set CSRF support
+// set CSRF support
 
-(function() {
+(function () {
 	function csrfSafeMethod(method) {
 		// these HTTP methods do not require CSRF protection
 		return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
@@ -24,9 +24,9 @@
 	}
 
 	$.ajaxSetup({
-		crossDomain : false,
+		crossDomain: false,
 		cache: false,
-		beforeSend : function(xhr, settings) {
+		beforeSend: function (xhr, settings) {
 			if (!csrfSafeMethod(settings.type)) {
 				xhr.setRequestHeader("X-CSRFToken", getCookie('csrftoken'));
 			}
@@ -34,17 +34,17 @@
 	});
 })();
 
-var restAPI = function() {
+var restAPI = function () {
 	"use strict";
 	var api = {};
 
 	var validators = {
-		required : function(value) {
+		required: function (value) {
 			if (!value) {
 				return gettext('Value is required');
 			}
 		},
-		minmax : function(value, min, max) {
+		minmax: function (value, min, max) {
 			if (!value && value !== 0) {
 				return;
 			}
@@ -61,7 +61,7 @@ var restAPI = function() {
 				return gettext('Value is geater then required maximum:') + max;
 			}
 		},
-		minmaxLength : function(value, min, max) {
+		minmaxLength: function (value, min, max) {
 			if (!value || value.length === undefined) {
 				return;
 			}
@@ -76,7 +76,7 @@ var restAPI = function() {
 		},
 		
 		type: {
-			float: function(value) {
+			float: function (value) {
 				if (! value) {
 					return;
 				}
@@ -84,7 +84,7 @@ var restAPI = function() {
 					return gettext('Value is not a number');
 				}
 			},
-			integer: function(value) {
+			integer: function (value) {
 				if (!value) {
 					return;
 				}
@@ -92,7 +92,7 @@ var restAPI = function() {
 					return gettext('Value is not an integer number');
 				}
 			},
-			date: function(value) {
+			date: function (value) {
 				if (!value) {
 					return;
 				}
@@ -111,7 +111,7 @@ var restAPI = function() {
 					
 				}
 			},
-			time: function(value) {
+			time: function (value) {
 				if (!value) {
 					return;
 				}
@@ -136,7 +136,7 @@ var restAPI = function() {
 					
 				}
 			},
-			email: function(value) {
+			email: function (value) {
 				if (! value) return;
 				var validFormat=/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 				if (! validFormat.test(value)) {
@@ -148,12 +148,12 @@ var restAPI = function() {
 
 	api.BaseCollection = Backbone.Collection.extend({
 
-		constructor : function() {
+		constructor: function () {
 			var opts = arguments[1] || arguments[0];
 			if (_.isObject(opts) && !_.isArray(opts)) {
 				var additionalOpts = [ 'query', 'page', 'pageSize',
 						'pageSizeParam' ];
-				_.each(additionalOpts, function(item) {
+				_.each(additionalOpts, function (item) {
 					if (opts[item]) {
 						this[item] = opts[item];
 					}
@@ -161,14 +161,14 @@ var restAPI = function() {
 			}
 			Backbone.Collection.apply(this, arguments);
 		},
-		initialize: function() {
-			this.on('error', function(model, xhr, options) {
+		initialize: function () {
+			this.on('error', function (model, xhr, options) {
 				if (xhr.errorHandled) return;
 				alert('Server Error on Collection: '+xhr.status + ' -'+xhr.statusText);
 			});
 		},
 
-		url : function() {
+		url: function () {
 			var qs = [];
 			if (this.pageSizeParam) {
 				var psParam = {};
@@ -178,7 +178,7 @@ var restAPI = function() {
 			}
 			if (this.page) {
 				qs.push({
-					page : this.page
+					page: this.page
 				});
 			}
 			if (this.query) {
@@ -192,9 +192,9 @@ var restAPI = function() {
 				return this.urlRoot;
 			}
 		},
-		_pageRe : /page=(\d+)/,
-		_defaultPageSize : 20,
-		parse : function(response) {
+		_pageRe: /page=(\d+)/,
+		_defaultPageSize: 20,
+		parse: function (response) {
 
 			this.pages = Math.ceil(response.count /
 					(this.pageSize || this._defaultPageSize));
@@ -210,7 +210,7 @@ var restAPI = function() {
 			return response.results;
 		},
 
-		fetchNext : function(options) {
+		fetchNext: function (options) {
 			if (this.nextPage) {
 				this.page = this.nextPage;
 				this.fetch(options);
@@ -218,7 +218,7 @@ var restAPI = function() {
 			}
 		},
 
-		fetchPrevious : function(options) {
+		fetchPrevious: function (options) {
 			if (this.previousPage) {
 				this.page = this.previousPage;
 				this.fetch(options);
@@ -230,9 +230,9 @@ var restAPI = function() {
 
 	api.BaseModel = Backbone.Model.extend({
 
-		initialize : function() {
+		initialize: function () {
 			var model=this;
-			this.on('error', function(model, xhr, options) {
+			this.on('error', function (model, xhr, options) {
 				xhr.errorHandled=true;
 				if (xhr.status == 400 && xhr.responseJSON &&
 						!$.isEmptyObject(xhr.responseJSON)) {
@@ -244,10 +244,10 @@ var restAPI = function() {
 				}
 			});
 			
-			this.on('sync', function(){model.ajaxFailed=false;});
+			this.on('sync', function (){model.ajaxFailed=false;});
 		},
 
-		defaults : function() {
+		defaults: function () {
 			var defs = {};
 			for ( var name in this.fields) {
 				if (!this.fields[name].read_only) {
@@ -261,11 +261,11 @@ var restAPI = function() {
 			return defs;
 		},
 
-		validate : function(attrs, options) {
+		validate: function (attrs, options) {
 		
 			var allErrors = {},
 			prevErrors=options.errors || {},
-			addError = function(err) {
+			addError = function (err) {
 				if (!err) {
 					return;
 				}
@@ -311,7 +311,7 @@ var restAPI = function() {
 			}
 		},
 
-		readOnly : function() {
+		readOnly: function () {
 			var ro = [];
 			for ( var name in this.fields) {
 				if (this.fields[name].read_only) {

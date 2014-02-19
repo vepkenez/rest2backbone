@@ -1,12 +1,7 @@
-'''
-Created on Sep 9, 2013
-
-@author: ivan
-'''
-
 from django.template.loader import render_to_string
 import json
 from django.utils.safestring import mark_safe
+
 
 class RouterAdapter(object):
     def __init__(self, router):
@@ -29,16 +24,15 @@ class RouterAdapter(object):
         
 
 class Field(object):
-    _attrs=['type_label', 'read_only', 'default', 'max_length', 'min_length', 'min_value', 'max_value', 'required' ]
-    _map={'type_label':'type'}
+    _attrs = ['type_label', 'read_only', 'default', 'max_length', 'min_length', 'min_value', 'max_value', 'required']
+    _map = {'type_label': 'type'}
     
     def __init__(self, name, ser_field):
-        self.name=name
-        self._attributes={}
+        self.name = name
+        self._attributes = {}
         for atr in self._attrs:
             if hasattr(ser_field, atr):
-
-                self._attributes[self._map.get(atr) or atr]=getattr(ser_field, atr)
+                self._attributes[self._map.get(atr) or atr] = getattr(ser_field, atr)
                 
     @property
     def attributes(self):
@@ -48,9 +42,9 @@ class Field(object):
 class Model(object):
             
     def __init__(self, name, serializer, url, url_prefix=''):
-        self.url=url_prefix+('/' if not (url.startswith('/') or url_prefix.endswith('/')) else '') + url
-        self.name=name
-        self._fields=[]
+        self.url = url_prefix+('/' if not (url.startswith('/') or url_prefix.endswith('/')) else '') + url
+        self.name = name
+        self._fields = []
         for name, field in serializer().fields.iteritems():
             self._fields.append(Field(name, field))
     
@@ -59,41 +53,42 @@ class Model(object):
         return self._fields
     
     def fields_json(self):
-        def fn(o,f):  
-            o[f.name]= f.attributes        
+        def fn(o, f):
+            o[f.name] = f.attributes
             return o 
-        return mark_safe(json.dumps(reduce(fn , self.fields, {})))
+        return mark_safe(json.dumps(reduce(fn, self.fields, {})))
     
     def toJS(self):
-        return render_to_string('rest2backbone/api-model.js', {'m':self})
+        return render_to_string('rest2backbone/api-model.js', {'m': self})
         
-        
-    
+
 class Collection(object):
-    def __init__(self,model):
-        self.url=model.url
-        self.name=model.name+'List'
-        self.model_name= model.name
+    def __init__(self, model):
+        self.url = model.url
+        self.name = model.name + 'List'
+        self.model_name = model.name
         
     def toJS(self):
-        return render_to_string('rest2backbone/api-collection.js', {'c':self})
-    
+        return render_to_string('rest2backbone/api-collection.js', {'c': self})
+
+
 class Index(Collection):
-    def __init__(self,model):
-        self.url=model.url+'-index'
-        self.name=model.name+'Index'
-        self.model_name= model.name
+    def __init__(self, model):
+        super(Collection, self).__init__()
+        self.url = model.url + '-index'
+        self.name = model.name + 'Index'
+        self.model_name = model.name
         
     def toJS(self):
-        return render_to_string('rest2backbone/api-index.js', {'c':self})
+        return render_to_string('rest2backbone/api-index.js', {'c': self})
         
         
 class ModelMaker(object):
     def __init__(self, router=None, url_prefix=None):
-        self.url_prefix=url_prefix or ''
-        self._models =[]
-        self._collections=[]
-        self._indexes=[]
+        self.url_prefix = url_prefix or ''
+        self._models = []
+        self._collections = []
+        self._indexes = []
         if router:
             self._list_router(router)
             
@@ -101,8 +96,8 @@ class ModelMaker(object):
         for name, serializer_class, url in RouterAdapter(router):
             self.add_model(name, serializer_class, url)
             
-    def add_model(self,name, serializer_class, url, no_collection=False, no_index=False):
-            model= Model(name, serializer_class, url, self.url_prefix)
+    def add_model(self, name, serializer_class, url, no_collection=False, no_index=False):
+            model = Model(name, serializer_class, url, self.url_prefix)
             self._models.append(model)
             if not no_collection:
                 self._collections.append(Collection(model))
@@ -112,6 +107,7 @@ class ModelMaker(object):
     @property    
     def models(self):
         return self._models
+
     @property
     def collections(self):
         return self._collections
@@ -119,18 +115,14 @@ class ModelMaker(object):
     @property
     def indexes(self):
         return self._indexes
-    
-    
+
     def toJS(self):
-        objects=[]
+        objects = []
         for m in self.models:
             objects.append(m.toJS())
         for c in self.collections:
             objects.append(c.toJS())
         for i in self.indexes:
             objects.append(i.toJS())
-        
             
         return '\n'.join(objects)
-
-
