@@ -25,19 +25,15 @@ Key features:
 Quick Start
 ===========
 
-[Get code from GitHub](https://github.com/izderadicka/rest2backbone/archive/master.zip)
-
-Extract
-
-Get dependencies - django, djangorestframwork
-
+Setup virtual environment and install dependencies
+`virtualenv venv
+`. venv/bin/activate  # assuming you're running linux or MacOS. In case of Windows, run venv/bin/activate.bat
 `pip -r requirements.pip`
 
 Load sample data
-`./manage.py loaddata sample_data.json`
+`./manage.py loaddata sample_app/fixtures/sample_data.json`
 
 Run server
-
 `./manage.py runserver`
 
 In browser open http://localhost:8000/
@@ -45,7 +41,6 @@ In browser open http://localhost:8000/
 In browser (Firefox/Chrome) open developer tools - to see API requests to server - on load/change of models
 
 Look into `sample_app` directory to see how to use.
-
 
 More Info
 =========
@@ -76,6 +71,8 @@ small fixes
 1.2.4 -  some changes to JS -   better handling of errors when server is not responding
 
 1.2.5 -  fixed to work with django 1.5+ and newer django-rest-framework
+
+1.2.6 -  forked by gbezyuk, cleaned up and reformatted for compatibility with PEP8
 
 License:
 =========
