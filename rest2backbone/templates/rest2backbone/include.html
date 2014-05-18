@@ -7,7 +7,7 @@ var django_backbone_models = [{% for model in backbone_models %}
 </script>
 
 {% for model in backbone_models %}
-{% if model1.title_attr %}
+{% if model.1.title_attr %}
     <script type="text/template" id="{{model.0|lower}}_list_title">
         <%= {{model.1.title_attr}} %>
     </script>
