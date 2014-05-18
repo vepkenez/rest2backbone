@@ -5,6 +5,8 @@ from rest_framework import serializers
 from rest2backbone.widgets import DynamicSelect
 from django.utils.translation import gettext_lazy as _
 
+from rest2backbone import application as r2bapplication
+
 
 class AuthorSerializer(ModelSerializer):
     class Meta:
@@ -16,15 +18,16 @@ class AuthorSerializer(ModelSerializer):
 class AuthorView(ViewSetWithIndex):
     model = Author
     serializer_class = AuthorSerializer
-    
-    def get_queryset(self): 
+
+    def get_queryset(self):
         qs = self.model.objects.all()
         q = self.request.QUERY_PARAMS.get('q')
-        
+
         if q:
             qs = qs.filter(Q(first_name__icontains=q) | Q(last_name__icontains=q))
         return qs
 
+r2bapplication.register('Author',AuthorView)
 
 class PublisherSerializer(ModelSerializer):
     class Meta:
@@ -34,16 +37,17 @@ class PublisherSerializer(ModelSerializer):
 class PublisherView(ViewSetWithIndex):
     model = Publisher
     serializer_class = PublisherSerializer
-    
-    def get_queryset(self): 
+
+    def get_queryset(self):
         qs = self.model.objects.all()
         q = self.request.QUERY_PARAMS.get('q')
-        
+
         if q:
             qs = qs.filter(name__icontains=q)
         return qs
-    
-    
+
+r2bapplication.register('Publisher',PublisherView)
+
 class BookSerializer(ModelSerializer):
     author_names = serializers.RelatedField(source='authors', many=True, label=_("Authors"))
     num_pages = serializers.IntegerField(min_value=1, max_value="99999", required=False, label=_('Pages'))
@@ -60,11 +64,13 @@ class BookSerializer(ModelSerializer):
 class BookView(ViewSetWithIndex):
     model = Book
     serializer_class = BookSerializer
-    
-    def get_queryset(self): 
+
+    def get_queryset(self):
         qs = self.model.objects.all()
         q = self.request.QUERY_PARAMS.get('q')
-        
+
         if q:
             qs = qs.filter(title__icontains=q)
         return qs
+
+r2bapplication.register('Book',BookView)

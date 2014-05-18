@@ -11,7 +11,7 @@ Key features:
  * validations
  * support to load values from HTML form
 - Collections:
- * support paging and searches and ordering 
+ * support paging and searches and ordering
  * special 'index' collections - just ID and representation of object - can be used in dynamic selects, autocompletes etc.
 
 - Can generate forms templates (based on models and resources definitions) for use in pages
@@ -45,14 +45,14 @@ Look into `sample_app` directory to see how to use.
 More Info
 =========
 
-More info will be on [project page on my web](http://zderadicka.eu/projects/python/rest2backbone/) 
- 
+More info will be on [project page on my web](http://zderadicka.eu/projects/python/rest2backbone/)
+
 
 Versions:
 ========
 1.0 - first release
 
-1.0.1 - minor fixes, 
+1.0.1 - minor fixes,
 	added support for Textarea widget in templates
 
 1.1 - revamped dynamic widgets to more flexible and extensible model,

@@ -1,17 +1,17 @@
 <script>
+
 var backbone_start_app = {% if backbone_start_app %}"{{backbone_start_app}}"{% else %}null{% endif %};
 var django_backbone_models = [{% for model in backbone_models %}
                                 '{{model.0}}'{% if not forloop.last %},{%endif%}
                                 {% endfor %}];
-
-
-
 </script>
 
 {% for model in backbone_models %}
-<script type="text/template" id="{{model.0|lower}}_list_title">
-    <%= {{model.1.title_attr}} %>
-</script>
+{% if model1.title_attr %}
+    <script type="text/template" id="{{model.0|lower}}_list_title">
+        <%= {{model.1.title_attr}} %>
+    </script>
+{% endif %}
 {% endfor %}
 
 <script>
