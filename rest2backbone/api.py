@@ -17,7 +17,7 @@ class RouterAdapter(object):
 
     def next(self):
         url, view_set, _name = next(self.registry_iter)
-        return self._get_model_name(view_set), view_set().get_serializer_class(), url
+        return self._get_model_name(view_set), view_set().get_serializer_class(), url, view_set
 
     def __iter__(self):
         return self
@@ -93,7 +93,9 @@ class ModelMaker(object):
             self._list_router(router)
 
     def _list_router(self, router):
-        for name, serializer_class, url in RouterAdapter(router):
+        for name, serializer_class, url, view_class in RouterAdapter(router):
+            if hasattr(view_class,'namespace'):
+                name = view_class.namespace
             self.add_model(name, serializer_class, url)
 
     def add_model(self, name, serializer_class, url, no_collection=False, no_index=False):

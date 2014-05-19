@@ -34,9 +34,9 @@ class Field(StrAndUnicode):
                     setattr(self, new_atr, getattr(ser_field, atr))
             else:
                 setattr(self, new_atr, None)
-        # widget must be supplied  for not writable fields    
+        # widget must be supplied  for not writable fields
         assert self.widget or self.read_only
-    
+
     @property
     def id(self):
         return self.auto_id % self.name.lower()
@@ -48,26 +48,26 @@ class Field(StrAndUnicode):
             widget = copy.deepcopy(widget)
         #monkey patch to adapt to template rendering
         if not hasattr(widget, 'render_template'):
-            widgets.patch(widget)    
+            widgets.patch(widget)
         return widget
-                    
+
     def render_ro(self):
         return mark_safe(u'<span id="id_'+self.name+'" class="'+self.ro_class+'"><%= '+self.name+' %></span>')
-    
+
     def hidden(self):
-        return isinstance(self.widget, forms_widgets.HiddenInput) 
-    
+        return isinstance(self.widget, forms_widgets.HiddenInput)
+
     def label_tag(self):
         req = u' class="required"' if self.required else ''
         id = self.auto_id % self.name
         return mark_safe(u'<label for="%s"%s>%s</label>' %
                          (id, req, (self.label and unicode(self.label)) or (u'&lt;%s&gt;' % self.name)))
-    
+
     def render(self):
         assert hasattr(self.widget, 'render_template')  # widget was patched
         self._rendered = True
         return mark_safe(self.widget.render_template(self.name, self.widget_attrs, self))
-    
+
     def render_js(self):
         if not self._rendered:
             raise RuntimeError('Has not been rendered yet')
@@ -76,7 +76,7 @@ class Field(StrAndUnicode):
             opts = self.widget.js_options(self.name, self.widget_attrs, self) or {}
             return cls, json.dumps(opts)
         return None, None
-    
+
     def __unicode__(self):
         if self.force_ro:
             return self.render_ro()
@@ -85,7 +85,7 @@ class Field(StrAndUnicode):
 
 
 class Form(object):
-    
+
     def __init__(self, name, serializer_class, template_name=None, template_name_ro=None, auto_id="id_form_%s"):
         self.name = name
         self.auto_id = auto_id
@@ -93,19 +93,19 @@ class Form(object):
         fields = serializer_class().fields
         for f in fields:
             self.add_field(f, fields[f])
-            
+
         self.template_name = template_name or 'rest2backbone/form.html'
         self.template_name_ro = template_name_ro or 'rest2backbone/form_ro.html'
         self.force_ro = False
-    
+
     def add_field(self, name, serializer_field):
         self._fields[name] = Field(self, name, serializer_field)
 
     @property
     def id(self):
         return self.auto_id % self.name.lower()
-       
-    @property        
+
+    @property
     def fields(self):
         if self.force_ro:
             fields = [copy.copy(f) for m, f in self._fields.iteritems()]
@@ -114,10 +114,10 @@ class Form(object):
         else:
             fields = [f for (m, f) in self._fields.iteritems() if (not f.read_only and not f.fields)]
         return fields
-    
+
     def get(self, name):
         return self._fields.get(name)
-    
+
     def render_ro(self):
         self.force_ro = True
         try:
@@ -126,7 +126,7 @@ class Form(object):
             res.append(render_to_string(self.template_name_ro, {'form': self}))
             res.append(u'</script>')
             return mark_safe('\n'.join(res))
-        finally:    
+        finally:
             self.force_ro = False
 
     JS_TEMPLATE0 = "if (!formsAPI.forms['%(form_id)s']) { formsAPI.forms['%(form_id)s']={} };"
@@ -142,7 +142,7 @@ class Form(object):
             zero_line = False
             for f in self.fields:
                 cls, opts = f.render_js()
-                if cls: 
+                if cls:
                     if not zero_line:
                         js.append(self.JS_TEMPLATE0 % {'form_id': self.id})
                         zero_line = True
@@ -153,7 +153,7 @@ class Form(object):
                 res.append('\n'.join(js))
                 res.append('</script>')
             return mark_safe('\n'.join(res))
-        
+
 
 class FormFactory(object):
     def __init__(self, router, template_name=None, template_name_ro=None):
@@ -162,27 +162,29 @@ class FormFactory(object):
         self.template_name_ro = template_name_ro
         if router:
             self._list_router(router)
-            
+
     def _list_router(self, router):
-        for name, serializer_class, url in RouterAdapter(router):
+        for name, serializer_class, url, view_class in RouterAdapter(router):
+            if hasattr(view_class,'namespace'):
+                name = view_class.namespace
             self.add_form(name, serializer_class)
-            
+
     def add_form(self, name, serializer_class):
         self._forms[name] = Form(name, serializer_class, self.template_name, self.template_name_ro)
-        
+
     def render_form(self, name):
         return self._forms(name).render()
-    
+
     def render_form_ro(self, name):
         return self._forms(name).render(read_only=True)
-    
+
     @property
     def forms(self):
         return self._forms.values()
-    
+
     def get(self, name):
         return self._forms.get(name)
-    
+
     def render_all(self, read_only=True):
         res = list()
         for f in self.forms:

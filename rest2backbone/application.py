@@ -12,6 +12,7 @@ def get_router():
 
     for namespace, view in APPLICATION:
         router.register(namespace, view)
+        view.namespace = namespace
 
     return router
 
