@@ -28,8 +28,8 @@ class ModelSerializer(serializers.ModelSerializer):
 
         if model_field:
             kwargs['required'] = not(model_field.null or model_field.blank)
-        
-        # I believe we can use these also for related fields    
+
+        # I believe we can use these also for related fields
         if model_field.verbose_name is not None:
             kwargs['label'] = model_field.verbose_name
 
@@ -40,13 +40,13 @@ class ModelSerializer(serializers.ModelSerializer):
 
 
 class ConcatField(fields.CharField):
-        
+
     def __init__(self, *args, **kwargs):
         self.fields = kwargs.pop('fields') if 'fields' in kwargs else None
         self.format = kwargs.pop('format') if 'format' in kwargs else None
         kwargs['source'] = '*'
         super(ConcatField, self).__init__(*args, **kwargs)
-        
+
     def to_native(self, instance):
         vals = SortedDict()
         for name in self.fields:
@@ -58,13 +58,13 @@ class ConcatField(fields.CharField):
             return self.format.format(**vals)
         else:
             return u' '.join(vals.values())
-        
+
     def _to_string(self, value):
         if isinstance(value, six.string_types) or value is None:
             return value
         value = smart_text(value)
         return escape(value)
-        
+
 
 class EscapedCharField(fields.CharField):
     def to_native(self, value):
@@ -77,7 +77,7 @@ class FloatField(fields.FloatField):
         'max_value': _('Ensure this value is less than or equal to %(limit_value)s.'),
         'min_value': _('Ensure this value is greater than or equal to %(limit_value)s.'),
     }
-    
+
     def __init__(self, max_value=None, min_value=None, *args, **kwargs):
         self.max_value, self.min_value = max_value, min_value
         super(FloatField, self).__init__(*args, **kwargs)
@@ -86,17 +86,17 @@ class FloatField(fields.FloatField):
             self.validators.append(validators.MaxValueValidator(max_value))
         if min_value is not None:
             self.validators.append(validators.MinValueValidator(min_value))
-            
-    
+
+
 class IndexMixin(object):
     class DefaultIndexSerializer(serializers.Serializer):
         id = fields.Field(source='pk')
         name = EscapedCharField(source='*', read_only=True)
-        
+
     def index(self, request, *args, **kwargs):
         self.object_list = self.filter_queryset(self.get_queryset())
         main_serializer= self.get_serializer_class()
-        
+
         if hasattr(main_serializer.Meta, 'index'):
             index = getattr(main_serializer.Meta, 'index')
             try:
@@ -117,7 +117,7 @@ class IndexMixin(object):
             class SerializerClass(self.pagination_serializer_class):
                 class Meta:
                     object_serializer_class = serializer_class
-    
+
             pagination_serializer_class = SerializerClass
             context = self.get_serializer_context()
             serializer = pagination_serializer_class(instance=page, context=context)
@@ -125,7 +125,7 @@ class IndexMixin(object):
             context = self.get_serializer_context()
             serializer = serializer_class(self.object_list, context=context, many=True)
         return Response(serializer.data)
-    
+
     def get_page_index(self, qs):
         page_size = self.max_paginate_by or 9999
         if self.paginate_by_param:
@@ -136,7 +136,7 @@ class IndexMixin(object):
                 )
             except (KeyError, ValueError):
                 pass
-            
+
         paginator = self.paginator_class(qs, page_size, allow_empty_first_page=True)
         page_kwarg = self.kwargs.get(self.page_kwarg)
         page_query_param = self.request.QUERY_PARAMS.get(self.page_kwarg)
@@ -157,7 +157,7 @@ class IndexMixin(object):
                 'message': str(e)
             })
 
-    
+
 class IndexedRouter(routers.DefaultRouter):
     routes = routers.DefaultRouter.routes + [Route(
         url=r'^{prefix}-index{trailing_slash}$',

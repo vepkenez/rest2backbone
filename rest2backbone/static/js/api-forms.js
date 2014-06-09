@@ -1,11 +1,11 @@
 var formsAPI= function () {
 	"use strict";
 	var api={forms:{}};
-	
+
 	var compileTemplate = function(templateElem) {
 		return _.template($(templateElem).html());
 	};
-	
+
 	api.compileTemplate=compileTemplate;
 
 	// base views
@@ -16,11 +16,10 @@ var formsAPI= function () {
 			if (this.template && !_.isFunction(this.template)) {
 				this.template = compileTemplate(this.template);
 			}
-			
+
 			if (this.templateItem && !_.isFunction(this.templateItem)) {
 				this.templateItem = compileTemplate(this.templateItem);
 			}
-			
 
 		},
 		render : function() {
@@ -34,7 +33,7 @@ var formsAPI= function () {
 		}
 
 	});
-	
+
 	api.BaseListView = api.BaseView
 			.extend({
 				tagName : 'div',
@@ -46,14 +45,14 @@ var formsAPI= function () {
 					'click #previous' : 'previousPage',
 					'click #next' : 'nextPage'
 				},
-				
+
 				render : function() {
 					var view = this;
 					this.$el.html(view.template(this.model));
 					this.model.forEach(function(item) {
 						view.$el.find('ul').append(
-								view.templateItem({title: view.getTitle(item), 
-										id:item.id, 
+								view.templateItem({title: view.getTitle(item),
+										id:item.id,
 										attributes:item.attributes}));
 					});
 					return this;
@@ -64,7 +63,7 @@ var formsAPI= function () {
 					}
 					return model.toString();
 				},
-				
+
 				previousPage : function() {
 					var view = this;
 					this.model.once('reset', function() {
@@ -84,11 +83,11 @@ var formsAPI= function () {
 						reset : true
 					});
 				}
-				
+
 			});
-	
+
 	api.FormView= api.BaseView.extend({
-		
+
 		initialize : function() {
 			api.BaseView.prototype.initialize.apply(this, arguments);
 			var view = this;
@@ -99,12 +98,12 @@ var formsAPI= function () {
 				view.displayErrors(errors);
 			});
 		},
-		
+
 		render: function(form_id) {
 			api.BaseView.prototype.render.apply(this);
 			this.initForm(form_id);
 		},
-		
+
 		initForm: function(form_id) {
 			var dynamicInputs= $('.r2b_dynamic', this.$el);
 			if (!form_id) {
@@ -116,25 +115,25 @@ var formsAPI= function () {
 				widget,
 				value=null,
 				id=el.attr('id');
-				
+
 				if (api.forms[form_id] && api.forms[form_id][id]) {
 					var def=api.forms[form_id][id];
 					var opts=_.extend({}, def.options, {formId:form_id, view:view});
 					widget=new def.cls(el, opts);
 					el.data('widget', widget);
-					
+
 				}
-				
+
 				// trigger refresh for dynamic inputs
 				if (view.model) {
 					var name=widget.getName() || el.attr('name');
 					value=view.model.get(name);
 				}
 				el.trigger('refresh', {value:value});
-				
+
 			});
 		},
-		
+
 		readForm : function() {
 			var diff = function(old, newer) {
 
@@ -161,12 +160,12 @@ var formsAPI= function () {
 					return false;
 				}
 
-				return !(old == newer || _.isArray(old) && 
+				return !(old == newer || _.isArray(old) &&
 						compareArrays(old, newer));
 			};
 			var changes={},
 			errors={};
-			
+
 			for ( var key in this.model.attributes) {
 				var readOnly = this.model.readOnly();
 				if (readOnly.indexOf(key) >= 0) {
@@ -189,12 +188,12 @@ var formsAPI= function () {
 					changes[key]=newVal;
 				}
 			}
-			
+
 			return {changed:changes, errors:errors};
-		}, 
-			
+		},
+
 		saveModel : function(event, options) {
-			
+
 			var data,
 			view=this;
 			this.clearErrors();
@@ -210,7 +209,7 @@ var formsAPI= function () {
 				return this._doSave(data, options);
 			}
 		},
-			
+
 		_doSave: function(data, options) {
 			var view = this,
 			root = this.$el;
@@ -231,7 +230,7 @@ var formsAPI= function () {
 							return this;
 						};
 						return promise;
-					} 
+					}
 				} else {
 				this.model.off('sync',  this.callAfterSave, this);
 				this.model.once('sync', this.callAfterSave, this);
@@ -248,13 +247,13 @@ var formsAPI= function () {
 				this.displayErrors({'':[gettext('No data entered/changed!')]});
 			}
 		},
-		
+
 		callAfterSave: function() {
 			if (this.afterSave) {
 				this.afterSave();
 			}
 		},
-		
+
 		displayErrors : function(errors) {
 			var root=this.$el,
 			list = root.find('ul.r2b_errors');
@@ -278,20 +277,20 @@ var formsAPI= function () {
 			root.find('ul.r2b_errors').empty();
 			root.find('label.error').removeClass('error');
 		}
-		
+
 	});
-	
+
 	api.getWidget= function(name, ctx) {
 		var input=$('#id_'+name+':not(.r2b_field_value_ro)', ctx);
 		if (input.length<1) return null;
 		var widget= input.data('widget');
 		if (! widget) {
 			widget=new api.Widget(input);
-			
+
 		}
 		return widget;
 	};
-	
+
 	api.Widget=function(selector, opts) {
 		this.options=_.extend({}, opts);
 		this.elem=$(selector);
@@ -300,16 +299,16 @@ var formsAPI= function () {
 		this.bindEvents();
 	}
 	};
-	
+
 	// these are properties that should not be overridden
 	var widgetBase={_isInput:function() {
 		return  _.contains(['INPUT', 'SELECT', 'TEXTAREA'], this.elem.prop('tagName').toUpperCase());
 	},
-	
+
 	error: function(msg) {
 		return {__error__:msg};
 	},
-	
+
 	get: function() {
 		var val=this.getValue();
 		if (val && val.__error__) {
@@ -320,7 +319,7 @@ var formsAPI= function () {
 			return val;
 		}
 	},
-	
+
 	set: function(value) {
 		this.setValue(value);
 	},
@@ -330,13 +329,13 @@ var formsAPI= function () {
 	getError:function() {
 		return this._error;
 	}
-	
+
 	};
-	
-	
-	_.extend(api.Widget.prototype, 
+
+
+	_.extend(api.Widget.prototype,
 		{
-		
+
 		getValue: function() {
 			if (! this._isInput()) {
 				throw "Don't know how to get value for " + this.elem.prop('tagName').toUpperCase();
@@ -345,9 +344,9 @@ var formsAPI= function () {
 					return this.elem.prop('checked');
 				}
 			return this.elem.val();
-	
+
 				},
-	
+
 		setValue: function(value) {
 			if (! this._isInput()) {
 				throw "Don't know how to set value for " + this.elem.prop('tagName').toUpperCase();
@@ -361,17 +360,17 @@ var formsAPI= function () {
 			} else {
 				this.elem.val(value);
 			}
-		 
+
 				},
-				
+
 		getName: function() {
 			return this.options.name;
 		},
-		
+
 		bindEvents: function() {
 			for (var k in this.events) {
 				if (_.has(this.events, k)) {
-					var elems=k.split(" "), 
+					var elems=k.split(" "),
 					evt=elems[0],
 					el=elems[1],
 					fn=this.events[k];
@@ -381,7 +380,7 @@ var formsAPI= function () {
 				}
 		}
 		});
-				
+
 	api.Widget.extend=function(instanceProps, staticProps) {
 		var parent=this,
 		child;
@@ -395,7 +394,7 @@ var formsAPI= function () {
 		if (_.has(instanceProps,'constructor')) {
 			delete proto.constructor;
 			child=function() {
-			parent.apply(this, arguments);  
+			parent.apply(this, arguments);
 			instanceProps.constructor.apply(this, arguments);
 			};
 		} else {
@@ -405,7 +404,7 @@ var formsAPI= function () {
 		// set constructor and prototype for child class
 		proto.constructor=child;
 		child.prototype=proto;
-		//in case true parent class/constructor is needed	
+		//in case true parent class/constructor is needed
 		child.__super__=parent;
 		//copy parent static properties
 		for (var k in parent) {
@@ -413,27 +412,27 @@ var formsAPI= function () {
 				child[k]=parent[k];
 			}
 		}
-		 
+
 		// and add new static properties
 		if (staticProps) {
 			_.extend(child, staticProps);
 		}
-		 
+
 	return child;
 	};
-		
-		
+
+
 	api.DynamicSelect = api.Widget
 			.extend({
 				events : {
 					"refresh" : "refresh"
 				},
 				refresh : function(e, obj) {
-					var select = this.elem, 
-					value = obj.value, 
+					var select = this.elem,
+					value = obj.value,
 					progress = $(
 							'<div>').addClass('r2b_progress-small')
-							.insertAfter(select), 
+							.insertAfter(select),
 					index = new restAPI[this.options.indexModel]();
 					select.empty();
 					if (! this.options.required) {
@@ -449,7 +448,7 @@ var formsAPI= function () {
 									item.id == value) {
 								o.attr('selected', '');
 							}
-							
+
 							o.appendTo(select);
 						});
 						progress.remove();
@@ -459,14 +458,14 @@ var formsAPI= function () {
 					});
 				}
 			});
-	
+
 	api.DynamicEditor=api.Widget.extend({
 		getValue:function() {
 			return $('input', this.elem).val();
 		},
 		events: {'refresh': 'getData',
 			'click .edit_btn': 'openEditor'},
-		
+
 		getData: function(){
 			var pk=this.get(),
 			widget=this;
@@ -475,27 +474,27 @@ var formsAPI= function () {
 			m.once('sync', function() {
 				widget.data=m;
 				widget.updateReadOnly();
-				
+
 			});
 			m.fetch();
 			} else {
 				widget.data=new restAPI[this.options.relatedModel]();
 			}
 		},
-		
+
 		updateReadOnly: function() {
 			var repr= this.data.toString();
 			$('.r2b_ro_value').html(repr);
 		},
-		
+
 		openEditor:function(event, newData) {
 			var widget=this,
 			popup=$('.r2b_widget_popup', this.elem);
 			if (popup.length>0) {
 				popup.remove();
 				if (!newData) return;
-			} 
-			
+			}
+
 			if (!this.data && !newData) return;
 			popup= $('<div>').addClass('r2b_widget_popup').appendTo(this.elem);
 			var Form = formsAPI.FormView.extend({
