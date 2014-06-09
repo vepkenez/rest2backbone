@@ -9,11 +9,9 @@ def register(namespace, view):
     APPLICATION.append((namespace, view))
 
 def get_router():
-    # router = IndexedRouter(trailing_slash=False)
-    router = routers.DefaultRouter()
+    router = IndexedRouter(trailing_slash=False)
 
     for namespace, view in APPLICATION:
-        print namespace, view
         router.register(namespace, view, base_name=namespace)
         view.namespace = namespace
 
